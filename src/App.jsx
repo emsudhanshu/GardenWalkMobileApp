@@ -1,57 +1,7 @@
 import { useEffect, useState } from "react";
 import { CircleMarker, MapContainer, Popup, TileLayer } from "react-leaflet";
 import { LOCALES } from "./constants/strings";
-
-const speciesCatalog = [
-  {
-    speciesId: "PS-101",
-    speciesName: "Rosemary",
-    image:
-      "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    speciesId: "PS-102",
-    speciesName: "Lavender",
-    image:
-      "https://images.unsplash.com/photo-1468327768560-75b778cbb551?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    speciesId: "PS-103",
-    speciesName: "Sunflower",
-    image:
-      "https://images.unsplash.com/photo-1470509037663-253afd7f0f51?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    speciesId: "PS-104",
-    speciesName: "Jasmine",
-    image:
-      "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    speciesId: "PS-105",
-    speciesName: "Mint",
-    image:
-      "https://images.unsplash.com/photo-1515586000433-45406d8e6662?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    speciesId: "PS-106",
-    speciesName: "Fern",
-    image:
-      "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    speciesId: "PS-107",
-    speciesName: "Hibiscus",
-    image:
-      "https://images.unsplash.com/photo-1501973801540-537f08ccae7b?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    speciesId: "PS-108",
-    speciesName: "Aloe Vera",
-    image:
-      "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=1200&q=80",
-  },
-];
+import plantnetAppRecords from "./data/plantnetAppRecords.json";
 
 function formatDate(dateValue, language) {
   const locale = language === "fr" ? "fr-FR" : "en-US";
@@ -61,6 +11,13 @@ function formatDate(dateValue, language) {
     day: "numeric",
     year: "numeric",
   }).format(new Date(dateValue));
+}
+
+function getConfidenceScore(record) {
+  const numericId = Number.parseInt(record.speciesId, 10) || record.id || 1;
+  const confidence = 88 + (numericId % 11);
+
+  return `${confidence}%`;
 }
 
 function exportRecordsAsPdf(records, strings, language) {
@@ -143,30 +100,6 @@ function exportRecordsAsPdf(records, strings, language) {
   exportWindow.document.close();
   exportWindow.focus();
   exportWindow.print();
-}
-
-function createDummyRecords() {
-  const records = [];
-
-  for (let index = 0; index < 50; index += 1) {
-    const species = speciesCatalog[index % speciesCatalog.length];
-    const detectedDate = new Date(2026, 3, 10 - (index % 12), 8 + (index % 8), 15);
-    const latitude = 40.7128 + (index % 10) * 0.008;
-    const longitude = -74.006 + (index % 7) * 0.01;
-
-    records.push({
-      id: index + 1,
-      speciesId: species.speciesId,
-      speciesName: species.speciesName,
-      detectedAt: detectedDate.toISOString(),
-      latitude,
-      longitude,
-      image: species.image,
-      notes: `Detected during a GardenWalk scan near zone ${index % 5 + 1}.`,
-    });
-  }
-
-  return records;
 }
 
 function GardenWalkLogo() {
@@ -397,24 +330,17 @@ function DeviceConnectionScreen({
 function ExploreSpeciesScreen({
   records,
   searchTerm,
-  dateFilter,
   currentPage,
   onBack,
   onSearchChange,
-  onDateFilterChange,
   onPageChange,
   onOpenRecord,
   strings,
 }) {
   const filteredRecords = records.filter((record) => {
-    const matchesSearch = record.speciesName
+    return record.speciesName
       .toLowerCase()
       .includes(searchTerm.trim().toLowerCase());
-    const matchesDate = dateFilter
-      ? record.detectedAt.slice(0, 10) === dateFilter
-      : true;
-
-    return matchesSearch && matchesDate;
   });
 
   const pageSize = 10;
@@ -449,15 +375,6 @@ function ExploreSpeciesScreen({
                 placeholder={strings.explore.searchPlaceholder}
                 value={searchTerm}
                 onChange={(event) => onSearchChange(event.target.value)}
-              />
-            </label>
-
-            <label className="field">
-              <span>{strings.common.filterByDate}</span>
-              <input
-                type="date"
-                value={dateFilter}
-                onChange={(event) => onDateFilterChange(event.target.value)}
               />
             </label>
           </div>
@@ -763,10 +680,14 @@ function PlantDetailScreen({ record, onBack, strings, language }) {
               <p className="eyebrow">{strings.detected.detailEyebrow}</p>
               <h2>{record.speciesName}</h2>
               <p className="hero-copy">
-                Species ID: {record.speciesId} | {strings.detected.detailDetectedLabel}{" "}
-                {formatDate(record.detectedAt, language)}
+                {strings.detected.detailSpeciesIdLabel}: {record.speciesId}
               </p>
-              <p className="hero-copy">{record.notes}</p>
+              <p className="hero-copy">
+                {strings.detected.detailDetectedLabel}: {formatDate(record.detectedAt, language)}
+              </p>
+              <p className="hero-copy">
+                {strings.detected.detailConfidenceLabel}: {getConfidenceScore(record)}
+              </p>
             </div>
             <img
               className="detail-panel__image"
@@ -826,11 +747,6 @@ function ExplorePlantDetailScreen({ record, onBack, strings, language }) {
               </button>
               <p className="eyebrow">{strings.explore.detailEyebrow}</p>
               <h2>{record.speciesName}</h2>
-              <p className="hero-copy">Species ID: {record.speciesId}</p>
-              <p className="hero-copy">
-                {strings.explore.detailDateLabel}: {formatDate(record.detectedAt, language)}
-              </p>
-              <p className="hero-copy">{record.notes}</p>
             </div>
             <img
               className="detail-panel__image"
@@ -874,7 +790,7 @@ function App() {
   const [activeScreen, setActiveScreen] = useState("home");
   const [bluetoothState, setBluetoothState] = useState("idle");
   const [deviceName, setDeviceName] = useState("");
-  const [detectedRecords, setDetectedRecords] = useState(createDummyRecords);
+  const [detectedRecords, setDetectedRecords] = useState(() => plantnetAppRecords);
   const [detectedView, setDetectedView] = useState("table");
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -884,7 +800,6 @@ function App() {
   const [selectedMapRecordId, setSelectedMapRecordId] = useState(1);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [exploreSearchTerm, setExploreSearchTerm] = useState("");
-  const [exploreDateFilter, setExploreDateFilter] = useState("");
   const [exploreCurrentPage, setExploreCurrentPage] = useState(1);
   const [selectedExploreRecord, setSelectedExploreRecord] = useState(null);
   const [showRefreshGuardModal, setShowRefreshGuardModal] = useState(false);
@@ -907,7 +822,7 @@ function App() {
 
   useEffect(() => {
     setExploreCurrentPage(1);
-  }, [exploreSearchTerm, exploreDateFilter]);
+  }, [exploreSearchTerm]);
 
   useEffect(() => {
     if (bluetoothState !== "connected") {
@@ -1032,11 +947,9 @@ function App() {
       <ExploreSpeciesScreen
         records={detectedRecords}
         searchTerm={exploreSearchTerm}
-        dateFilter={exploreDateFilter}
         currentPage={exploreCurrentPage}
         onBack={() => setActiveScreen("home")}
         onSearchChange={setExploreSearchTerm}
-        onDateFilterChange={setExploreDateFilter}
         onPageChange={setExploreCurrentPage}
         onOpenRecord={handleOpenExploreRecord}
         strings={strings}
