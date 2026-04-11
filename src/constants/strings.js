@@ -45,6 +45,7 @@ export const LOCALES = {
     common: {
       back: "Back",
       close: "Close",
+      continue: "Continue",
       previous: "Previous",
       next: "Next",
       searchBySpecies: "Search by species name",
@@ -77,6 +78,21 @@ export const LOCALES = {
     },
     placeholder: {
       eyebrow: "Coming next",
+    },
+    quotes: {
+      title: "Quote of the Day",
+      items: [
+        "In every walk with nature, one receives far more than he seeks.",
+        "Look deep into nature, and then you will understand everything better.",
+        "The earth has music for those who listen.",
+        "Nature always wears the colors of the spirit.",
+        "Adopt the pace of nature: her secret is patience.",
+        "The poetry of the earth is never dead.",
+        "Heaven is under our feet as well as over our heads.",
+        "To forget how to dig the earth and to tend the soil is to forget ourselves.",
+        "There are always flowers for those who want to see them.",
+        "Study nature, love nature, stay close to nature. It will never fail you.",
+      ],
     },
     explore: {
       eyebrow: "Explore plant species",
@@ -174,6 +190,7 @@ export const LOCALES = {
     common: {
       back: "Retour",
       close: "Fermer",
+      continue: "Continuer",
       previous: "Precedent",
       next: "Suivant",
       searchBySpecies: "Rechercher par nom d'espece",
@@ -206,6 +223,21 @@ export const LOCALES = {
     },
     placeholder: {
       eyebrow: "Bientot disponible",
+    },
+    quotes: {
+      title: "Citation du jour",
+      items: [
+        "Dans chaque promenade avec la nature, on recoit bien plus que ce que l'on cherche.",
+        "Regardez profondement la nature, et vous comprendrez tout beaucoup mieux.",
+        "La terre a une musique pour ceux qui ecoutent.",
+        "La nature porte toujours les couleurs de l'esprit.",
+        "Adoptez le rythme de la nature : son secret est la patience.",
+        "La poesie de la terre ne meurt jamais.",
+        "Le ciel est sous nos pieds autant qu'au-dessus de nos tetes.",
+        "Oublier comment travailler la terre, c'est nous oublier nous-memes.",
+        "Il y a toujours des fleurs pour ceux qui veulent les voir.",
+        "Etudiez la nature, aimez la nature, restez proches d'elle. Elle ne vous decevra jamais.",
+      ],
     },
     explore: {
       eyebrow: "Explorer les especes de plantes",

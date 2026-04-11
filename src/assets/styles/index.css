@@ -132,6 +132,30 @@ select {
   font-size: 1rem;
 }
 
+.quote-card {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: rgba(216, 234, 205, 0.5);
+  text-align: left;
+}
+
+.quote-card__label {
+  margin: 0 0 8px;
+  color: var(--moss);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.quote-card__text {
+  margin: 0;
+  color: rgba(20, 49, 38, 0.88);
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
 .loading-bar {
   width: 100%;
   height: 12px;

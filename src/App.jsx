@@ -20,6 +20,13 @@ function getConfidenceScore(record) {
   return `${confidence}%`;
 }
 
+function getRandomQuote(strings) {
+  const quotes = strings.quotes.items;
+  const randomIndex = Math.floor(Math.random() * quotes.length);
+
+  return quotes[randomIndex];
+}
+
 function exportRecordsAsPdf(records, strings, language) {
   const exportWindow = window.open("", "_blank", "width=900,height=700");
 
@@ -173,7 +180,7 @@ function PlantMap({
   );
 }
 
-function SplashScreen({ strings }) {
+function SplashScreen({ strings, dailyQuote }) {
   return (
     <section className="screen screen--splash">
       <div className="screen__glow screen__glow--left" />
@@ -183,6 +190,10 @@ function SplashScreen({ strings }) {
         <p className="eyebrow">{strings.splash.eyebrow}</p>
         <h1>{strings.splash.title}</h1>
         <p className="splash-copy">{strings.splash.copy}</p>
+        <div className="quote-card">
+          <p className="quote-card__label">{strings.quotes.title}</p>
+          <p className="quote-card__text">"{dailyQuote}"</p>
+        </div>
         <div className="loading-bar" aria-label={strings.splash.loadingLabel}>
           <span className="loading-bar__fill" />
         </div>
@@ -807,6 +818,7 @@ function App() {
   const [connectionMessage, setConnectionMessage] = useState(
     LOCALES.en.device.notConnectedMessage
   );
+  const [dailyQuote, setDailyQuote] = useState(() => getRandomQuote(LOCALES.en));
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -829,6 +841,10 @@ function App() {
       setConnectionMessage(strings.device.notConnectedMessage);
     }
   }, [strings, bluetoothState]);
+
+  useEffect(() => {
+    setDailyQuote(getRandomQuote(strings));
+  }, [strings]);
 
   const handleSelectOption = (screenKey) => {
     setActiveScreen(screenKey);
@@ -1006,7 +1022,7 @@ function App() {
 
   return (
     <main className="app-shell">
-      {isLoading ? <SplashScreen strings={strings} /> : screenContent}
+      {isLoading ? <SplashScreen strings={strings} dailyQuote={dailyQuote} /> : screenContent}
       {showRefreshGuardModal ? (
         <ActionModal
           title={strings.detected.connectionRequiredTitle}
