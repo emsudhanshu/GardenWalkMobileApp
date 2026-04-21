@@ -3,6 +3,9 @@ import { CircleMarker, MapContainer, Popup, TileLayer } from "react-leaflet";
 import { LOCALES } from "./constants/strings";
 import plantnetAppRecords from "./data/plantnetAppRecords.json";
 
+const DETECTED_SPECIES_API_TARGET = "http://192.168.50.1:5000/data";
+
+
 function formatDate(dateValue, language) {
   const locale = language === "fr" ? "fr-FR" : "en-US";
 
@@ -25,6 +28,36 @@ function getRandomQuote(strings) {
   const randomIndex = Math.floor(Math.random() * quotes.length);
 
   return quotes[randomIndex];
+}
+
+function normalizeDetectedRecord(record, index) {
+  return {
+    ...record,
+    image: record.image || null,
+    _clientId:
+      record._clientId ||
+      `${record.id ?? "record"}-${record.speciesId ?? "species"}-${record.detectedAt ?? "time"}-${index}`,
+  };
+}
+
+function normalizeDetectedRecords(records) {
+  if (!Array.isArray(records)) {
+    return [];
+  }
+
+  return records.map((record, index) => normalizeDetectedRecord(record, index));
+}
+
+async function fetchDetectedSpeciesRecords() {
+  const response = await fetch(DETECTED_SPECIES_API_TARGET);
+
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  return normalizeDetectedRecords(data);
 }
 
 function exportRecordsAsPdf(records, strings, language) {
@@ -149,9 +182,9 @@ function PlantMap({
       />
       {records.map((record) => (
         <CircleMarker
-          key={record.id}
+          key={record._clientId}
           center={[record.latitude, record.longitude]}
-          radius={selectedRecordId === record.id ? 10 : 8}
+          radius={selectedRecordId === record._clientId ? 10 : 8}
           pathOptions={{
             color: "#b8201f",
             fillColor: "#d9423a",
@@ -159,7 +192,7 @@ function PlantMap({
             weight: 2,
           }}
           eventHandlers={{
-            click: () => onSelectRecord?.(record.id),
+            click: () => onSelectRecord?.(record._clientId),
           }}
         >
           <Popup>
@@ -202,12 +235,7 @@ function SplashScreen({ strings, dailyQuote }) {
   );
 }
 
-function HomeScreen({
-  deviceStatus,
-  deviceName,
-  onSelectOption,
-  strings,
-}) {
+function HomeScreen({ onSelectOption, strings }) {
   return (
     <section className="screen screen--home">
       <div className="home-shell">
@@ -248,91 +276,11 @@ function HomeScreen({
               type="button"
               onClick={() => onSelectOption(item.key)}
             >
-              {item.key === "connect" ? (
-                <span
-                  className={`status-pill ${
-                    deviceStatus === "connected"
-                      ? "status-pill--connected"
-                      : "status-pill--disconnected"
-                  }`}
-                >
-                  {deviceStatus === "connected"
-                    ? `${strings.home.connectedLabel}${deviceName ? `: ${deviceName}` : ""}`
-                    : strings.home.disconnectedLabel}
-                </span>
-              ) : null}
               <h3>{item.title}</h3>
               <p>{item.description}</p>
             </button>
           ))}
         </div>
-      </div>
-    </section>
-  );
-}
-
-function DeviceConnectionScreen({
-  bluetoothState,
-  connectionMessage,
-  deviceName,
-  onBack,
-  onConnect,
-  strings,
-}) {
-  const isConnecting = bluetoothState === "connecting";
-  const isConnected = bluetoothState === "connected";
-
-  return (
-    <section className="screen screen--home">
-      <div className="home-shell">
-        <header className="hero-panel hero-panel--device">
-          <div>
-            <button className="back-link" type="button" onClick={onBack}>
-              {strings.common.back}
-            </button>
-            <p className="eyebrow">{strings.device.eyebrow}</p>
-            <h2>{strings.device.title}</h2>
-            <p className="hero-copy">{strings.device.copy}</p>
-          </div>
-          <div className="device-visual">
-            <div className="device-visual__ring" />
-            <div className="device-visual__core">
-              <span className="device-visual__dot" />
-            </div>
-          </div>
-        </header>
-
-        <section className="device-panel">
-          <div className="device-panel__status">
-            <span
-              className={`status-pill ${
-                isConnected
-                  ? "status-pill--connected"
-                  : "status-pill--disconnected"
-              }`}
-            >
-              {isConnected
-                ? strings.home.connectedLabel
-                : strings.device.waitingLabel}
-            </span>
-            <h3>{deviceName || strings.device.noDeviceSelected}</h3>
-            <p>{connectionMessage}</p>
-          </div>
-
-          <div className="device-panel__actions">
-            <button
-              className="primary-action"
-              type="button"
-              onClick={onConnect}
-              disabled={isConnecting}
-            >
-              {isConnecting
-                ? strings.device.searchingButton
-                : strings.device.bluetoothButton}
-            </button>
-            <p className="device-help">{strings.device.help}</p>
-          </div>
-        </section>
       </div>
     </section>
   );
@@ -487,7 +435,7 @@ function DetectedSpeciesScreen({
     safePage * pageSize
   );
   const selectedMapRecord =
-    filteredRecords.find((record) => record.id === selectedMapRecordId) ||
+    filteredRecords.find((record) => record._clientId === selectedMapRecordId) ||
     filteredRecords[0] ||
     null;
 
@@ -514,11 +462,21 @@ function DetectedSpeciesScreen({
                 ? strings.detected.refreshingButton
                 : strings.detected.refreshButton}
             </button>
-            <div className="loading-bar loading-bar--compact" aria-hidden="true">
-              <span
-                className="loading-bar__fill loading-bar__fill--manual"
-                style={{ transform: `scaleX(${refreshProgress / 100})` }}
-              />
+            <div
+              className="refresh-progress"
+              aria-live="polite"
+              aria-label={`${strings.detected.loadingBarLabel} ${Math.round(refreshProgress)}%`}
+            >
+              <div className="refresh-progress__header">
+                <span>{strings.detected.loadingBarLabel}</span>
+                <strong>{Math.round(refreshProgress)}%</strong>
+              </div>
+              <div className="loading-bar loading-bar--compact" aria-hidden="true">
+                <span
+                  className="loading-bar__fill loading-bar__fill--manual"
+                  style={{ transform: `scaleX(${refreshProgress / 100})` }}
+                />
+              </div>
             </div>
             <p className="device-help">
               {refreshState === "loading"
@@ -604,7 +562,7 @@ function DetectedSpeciesScreen({
                 <tbody>
                   {paginatedRecords.map((record) => (
                     <tr
-                      key={record.id}
+                      key={record._clientId}
                       className="species-table__row"
                       onClick={() => onOpenRecord(record)}
                     >
@@ -700,11 +658,17 @@ function PlantDetailScreen({ record, onBack, strings, language }) {
                 {strings.detected.detailConfidenceLabel}: {getConfidenceScore(record)}
               </p>
             </div>
-            <img
-              className="detail-panel__image"
-              src={record.image}
-              alt={record.speciesName}
-            />
+            {record.image ? (
+              <img
+                className="detail-panel__image"
+                src={record.image}
+                alt={record.speciesName}
+              />
+            ) : (
+              <div className="detail-panel__image detail-panel__image--placeholder">
+                <GardenWalkLogo />
+              </div>
+            )}
           </div>
 
           <div className="detail-map">
@@ -771,7 +735,7 @@ function ExplorePlantDetailScreen({ record, onBack, strings, language }) {
   );
 }
 
-function ActionModal({ title, message, actionLabel, closeLabel, onAction, onClose }) {
+function ActionModal({ title, message, closeLabel, onClose }) {
   return (
     <div className="modal-backdrop" role="presentation">
       <div
@@ -783,11 +747,8 @@ function ActionModal({ title, message, actionLabel, closeLabel, onAction, onClos
         <h3 id="action-modal-title">{title}</h3>
         <p>{message}</p>
         <div className="modal-card__actions">
-          <button className="secondary-action" type="button" onClick={onClose}>
+          <button className="primary-action" type="button" onClick={onClose}>
             {closeLabel}
-          </button>
-          <button className="primary-action" type="button" onClick={onAction}>
-            {actionLabel}
           </button>
         </div>
       </div>
@@ -799,25 +760,22 @@ function App() {
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [isLoading, setIsLoading] = useState(true);
   const [activeScreen, setActiveScreen] = useState("home");
-  const [bluetoothState, setBluetoothState] = useState("idle");
-  const [deviceName, setDeviceName] = useState("");
-  const [detectedRecords, setDetectedRecords] = useState(() => plantnetAppRecords);
+  const [detectedRecords, setDetectedRecords] = useState(() =>
+    normalizeDetectedRecords(plantnetAppRecords)
+  );
   const [detectedView, setDetectedView] = useState("table");
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [refreshState, setRefreshState] = useState("idle");
   const [refreshProgress, setRefreshProgress] = useState(0);
-  const [selectedMapRecordId, setSelectedMapRecordId] = useState(1);
+  const [selectedMapRecordId, setSelectedMapRecordId] = useState(null);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [exploreSearchTerm, setExploreSearchTerm] = useState("");
   const [exploreCurrentPage, setExploreCurrentPage] = useState(1);
   const [selectedExploreRecord, setSelectedExploreRecord] = useState(null);
-  const [showRefreshGuardModal, setShowRefreshGuardModal] = useState(false);
+  const [refreshErrorMessage, setRefreshErrorMessage] = useState("");
   const strings = LOCALES[selectedLanguage];
-  const [connectionMessage, setConnectionMessage] = useState(
-    LOCALES.en.device.notConnectedMessage
-  );
   const [dailyQuote, setDailyQuote] = useState(() => getRandomQuote(LOCALES.en));
 
   useEffect(() => {
@@ -837,62 +795,60 @@ function App() {
   }, [exploreSearchTerm]);
 
   useEffect(() => {
-    if (bluetoothState !== "connected") {
-      setConnectionMessage(strings.device.notConnectedMessage);
-    }
-  }, [strings, bluetoothState]);
-
-  useEffect(() => {
     setDailyQuote(getRandomQuote(strings));
   }, [strings]);
+
+  useEffect(() => {
+    setSelectedMapRecordId((currentSelectedId) => {
+      if (
+        currentSelectedId &&
+        detectedRecords.some((record) => record._clientId === currentSelectedId)
+      ) {
+        return currentSelectedId;
+      }
+
+      return detectedRecords[0]?._clientId ?? null;
+    });
+  }, [detectedRecords]);
+
+  useEffect(() => {
+    if (activeScreen !== "detected") {
+      return;
+    }
+
+    const fetchOnDetectedScreenOpen = async () => {
+      setRefreshState("loading");
+      setRefreshProgress(15);
+      setRefreshErrorMessage("");
+
+      try {
+        const normalizedRecords = await fetchDetectedSpeciesRecords();
+
+        setRefreshProgress(100);
+        setDetectedRecords(normalizedRecords);
+        setRefreshState("done");
+        window.setTimeout(() => {
+          setRefreshState("idle");
+          setRefreshProgress(0);
+        }, 800);
+      } catch {
+        setRefreshProgress(0);
+        setRefreshState("idle");
+        setRefreshErrorMessage(strings.detected.refreshFailedMessage);
+      }
+    };
+
+    void fetchOnDetectedScreenOpen();
+  }, [activeScreen, strings]);
 
   const handleSelectOption = (screenKey) => {
     setActiveScreen(screenKey);
   };
 
-  const handleConnectDevice = async () => {
-    if (!("bluetooth" in navigator)) {
-      setBluetoothState("error");
-      setConnectionMessage(strings.device.unavailableMessage);
-      return;
-    }
-
-    setBluetoothState("connecting");
-    setConnectionMessage(strings.device.lookingMessage);
-
-    try {
-      const device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: [],
-      });
-
-      const resolvedDeviceName = device.name || "Unnamed Bluetooth Device";
-      setDeviceName(resolvedDeviceName);
-      setBluetoothState("connected");
-      setConnectionMessage(
-        `${strings.home.connectedLabel} ${resolvedDeviceName}. ${strings.device.connectedMessage}`
-      );
-    } catch (error) {
-      const didCancel =
-        error instanceof DOMException && error.name === "NotFoundError";
-
-      setBluetoothState("idle");
-      setConnectionMessage(
-        didCancel
-          ? strings.device.cancelledMessage
-          : strings.device.failedMessage
-      );
-    }
-  };
-
-  const handleRefreshDetectedData = () => {
-    if (bluetoothState !== "connected") {
-      setShowRefreshGuardModal(true);
-      return;
-    }
-
+  const handleRefreshDetectedData = async () => {
     setRefreshState("loading");
     setRefreshProgress(0);
+    setRefreshErrorMessage("");
 
     let progressValue = 0;
     const progressInterval = window.setInterval(() => {
@@ -900,30 +856,24 @@ function App() {
       setRefreshProgress(Math.min(progressValue, 100));
     }, 450);
 
-    window.setTimeout(() => {
+    try {
+      const normalizedRecords = await fetchDetectedSpeciesRecords();
+
       window.clearInterval(progressInterval);
       setRefreshProgress(100);
-      setDetectedRecords((currentRecords) =>
-        currentRecords.map((record, index) => {
-          if (index < 6) {
-            const refreshedDate = new Date();
-            refreshedDate.setMinutes(refreshedDate.getMinutes() - index * 4);
 
-            return {
-              ...record,
-              detectedAt: refreshedDate.toISOString(),
-            };
-          }
-
-          return record;
-        })
-      );
+      setDetectedRecords(normalizedRecords);
       setRefreshState("done");
       window.setTimeout(() => {
         setRefreshState("idle");
         setRefreshProgress(0);
       }, 800);
-    }, 2300);
+    } catch {
+      window.clearInterval(progressInterval);
+      setRefreshProgress(0);
+      setRefreshState("idle");
+      setRefreshErrorMessage(strings.detected.refreshFailedMessage);
+    }
   };
 
   const handleOpenRecord = (record) => {
@@ -938,25 +888,10 @@ function App() {
 
   let screenContent = (
     <HomeScreen
-      deviceStatus={bluetoothState === "connected" ? "connected" : "disconnected"}
-      deviceName={deviceName}
       onSelectOption={handleSelectOption}
       strings={strings}
     />
   );
-
-  if (activeScreen === "connect") {
-    screenContent = (
-      <DeviceConnectionScreen
-        bluetoothState={bluetoothState}
-        connectionMessage={connectionMessage}
-        deviceName={deviceName}
-        onBack={() => setActiveScreen("home")}
-        onConnect={handleConnectDevice}
-        strings={strings}
-      />
-    );
-  }
 
   if (activeScreen === "explore") {
     screenContent = (
@@ -1023,17 +958,12 @@ function App() {
   return (
     <main className="app-shell">
       {isLoading ? <SplashScreen strings={strings} dailyQuote={dailyQuote} /> : screenContent}
-      {showRefreshGuardModal ? (
+      {refreshErrorMessage ? (
         <ActionModal
-          title={strings.detected.connectionRequiredTitle}
-          message={strings.detected.connectionRequiredMessage}
-          actionLabel={strings.detected.connectionRequiredAction}
+          title={strings.detected.refreshFailedTitle}
+          message={refreshErrorMessage}
           closeLabel={strings.common.close}
-          onClose={() => setShowRefreshGuardModal(false)}
-          onAction={() => {
-            setShowRefreshGuardModal(false);
-            setActiveScreen("connect");
-          }}
+          onClose={() => setRefreshErrorMessage("")}
         />
       ) : null}
     </main>

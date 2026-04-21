@@ -8,36 +8,30 @@ export const LOCALES = {
     appName: "Nature Walk",
     menuItems: [
       {
-        key: "connect",
-        title: "Connect to Wearable Device",
-        description:
-          "Pair the Nature Walk wearable device with the companion smartphone application.",
-      },
-      {
         key: "explore",
         title: "Explore Plant Species",
         description:
-          "Browse the plant species catalog used by the wearable plant classification system.",
+          "Browse the plant species catalog used by the Nature Walk application.",
       },
       {
         key: "detected",
         title: "View Detected Plant Species",
         description:
-          "Review detected plant species, timestamps, and locations received from the wearable device.",
+          "Review detected plant species, timestamps, and locations from the latest synced records.",
       },
     ],
     splash: {
-      eyebrow: "Wearable Plant Classification System",
+      eyebrow: "Plant Species Detection System",
       title: "Nature Walk",
       copy:
-        "Identify and catalogue plant species during outdoor walks using a wearable device and companion smartphone application.",
+        "Identify and catalogue plant species during outdoor walks with the Nature Walk mobile application.",
       loadingLabel: "Loading Nature Walk",
     },
     home: {
       eyebrow: "Welcome to Nature Walk",
-      title: "Wearable plant classification with a companion smartphone organizer",
+      title: "Plant species detection with a companion mobile organizer",
       copy:
-        "Connect the wearable device, explore the plant catalog, and review plant species detections with timestamps and GPS locations.",
+        "Explore the plant catalog and review plant species detections with timestamps and GPS locations.",
       connectedLabel: "Connected",
       disconnectedLabel: "Not Connected",
       languageLabel: "Language",
@@ -51,30 +45,6 @@ export const LOCALES = {
       searchBySpecies: "Search by species name",
       filterByDate: "Filter by date",
       noPlantSelected: "No plant selected",
-    },
-    device: {
-      eyebrow: "Device pairing",
-      title: "Connect your Nature Walk wearable device over Bluetooth",
-      copy:
-        "Turn on the wearable device, keep it nearby, then open the Bluetooth picker and select it to link with the companion smartphone application.",
-      waitingLabel: "Waiting for connection",
-      noDeviceSelected: "No device selected yet",
-      searchingButton: "Searching for devices...",
-      bluetoothButton: "Turn On Bluetooth",
-      help:
-        "The browser will prompt you to pick from nearby Bluetooth devices. This works on supported browsers such as Chrome or Edge on secure origins like localhost.",
-      notConnectedMessage:
-        "Your wearable device is not connected. Turn on the device and start Bluetooth pairing.",
-      unavailableMessage:
-        "Bluetooth is not available in this browser. Open Nature Walk in Chrome or Edge on localhost or HTTPS.",
-      lookingMessage:
-        "Looking for nearby Bluetooth devices. Select your Nature Walk wearable device when the picker opens.",
-      connectedMessage:
-        "You can now continue with the companion smartphone application features.",
-      cancelledMessage:
-        "No device was selected. Turn on the device Bluetooth and try again.",
-      failedMessage:
-        "Nature Walk could not connect right now. Check Bluetooth permissions and try again.",
     },
     placeholder: {
       eyebrow: "Coming next",
@@ -107,15 +77,19 @@ export const LOCALES = {
     },
     detected: {
       eyebrow: "Detected species",
-      title: "Latest plant species detected from your wearable device",
+      title: "Latest detected plant species",
       copy:
-        "Refresh the latest Bluetooth data, search by species name, narrow by date, and review the detections gathered during your walk.",
+        "Refresh the latest records from the API, search by species name, narrow by date, and review the detections gathered during your walk.",
       refreshingButton: "Refreshing data...",
-      refreshButton: "Refresh from Device",
+      refreshButton: "Refresh from Wearable Device",
       refreshingCopy:
-        "Pulling the most recent detections from the Bluetooth device.",
+        "Pulling the most recent detections from the API.",
       refreshIdleCopy:
-        "Tap refresh to simulate syncing the latest detections.",
+        "Tap refresh to sync the latest detections.",
+      loadingBarLabel: "Loading progress",
+      refreshFailedTitle: "Unable to refresh data",
+      refreshFailedMessage:
+        "Nature Walk could not load the latest detected plant records from the API.",
       tableView: "Table View",
       mapView: "Map View",
       searchPlaceholder: "Search detected plants",
@@ -135,10 +109,6 @@ export const LOCALES = {
       pdfTitle: "Nature Walk Detected Species Report",
       pdfCountLabel: "Filtered records exported",
       pdfOpenDetails: "Open details",
-      connectionRequiredTitle: "Device connection required",
-      connectionRequiredMessage:
-        "Bluetooth is off or your Nature Walk wearable device is not connected. Connect your device before refreshing the latest detected plants.",
-      connectionRequiredAction: "Go to Connect Wearable Device",
     },
     table: {
       id: "ID",
@@ -153,12 +123,6 @@ export const LOCALES = {
     appName: "Nature Walk",
     menuItems: [
       {
-        key: "connect",
-        title: "Connecter l'appareil",
-        description:
-          "Associez l'appareil portable Nature Walk a l'application mobile compagnon.",
-      },
-      {
         key: "explore",
         title: "Explorer les especes de plantes",
         description:
@@ -172,10 +136,10 @@ export const LOCALES = {
       },
     ],
     splash: {
-      eyebrow: "La nature dans votre poche",
+      eyebrow: "Detection intelligente des plantes",
       title: "Nature Walk",
       copy:
-        "Decouvrez les plantes autour de vous, connectez des appareils et suivez ce que vous detectez a chaque promenade.",
+        "Decouvrez les plantes autour de vous et suivez ce que vous detectez a chaque promenade.",
       loadingLabel: "Chargement de GardenWalk",
     },
     home: {
@@ -196,30 +160,6 @@ export const LOCALES = {
       searchBySpecies: "Rechercher par nom d'espece",
       filterByDate: "Filtrer par date",
       noPlantSelected: "Aucune plante selectionnee",
-    },
-    device: {
-      eyebrow: "Association de l'appareil",
-      title: "Connectez votre appareil portable Nature Walk en Bluetooth",
-      copy:
-        "Allumez votre appareil, gardez-le a proximite, puis appuyez sur le bouton ci-dessous pour ouvrir le selecteur Bluetooth et choisir parmi les appareils disponibles.",
-      waitingLabel: "En attente de connexion",
-      noDeviceSelected: "Aucun appareil selectionne",
-      searchingButton: "Recherche des appareils...",
-      bluetoothButton: "Activer le Bluetooth",
-      help:
-        "Le navigateur vous invitera a choisir parmi les appareils Bluetooth a proximite. Cela fonctionne sur des navigateurs compatibles comme Chrome ou Edge sur localhost ou HTTPS.",
-      notConnectedMessage:
-        "Votre appareil n'est pas connecte. Allumez l'appareil et lancez l'association Bluetooth.",
-      unavailableMessage:
-        "Le Bluetooth n'est pas disponible dans ce navigateur. Ouvrez Nature Walk dans Chrome ou Edge sur localhost ou HTTPS.",
-      lookingMessage:
-        "Recherche d'appareils Bluetooth a proximite. Selectionnez votre appareil Nature Walk lorsque le selecteur s'ouvre.",
-      connectedMessage:
-        "Vous pouvez maintenant continuer a utiliser les fonctionnalites de GardenWalk.",
-      cancelledMessage:
-        "Aucun appareil n'a ete selectionne. Activez le Bluetooth de l'appareil et reessayez.",
-      failedMessage:
-        "Nature Walk ne peut pas se connecter pour le moment. Verifiez les autorisations Bluetooth et reessayez.",
     },
     placeholder: {
       eyebrow: "Bientot disponible",
@@ -252,15 +192,19 @@ export const LOCALES = {
     },
     detected: {
       eyebrow: "Especes detectees",
-      title: "Dernieres plantes detectees depuis votre appareil portable",
+      title: "Dernieres plantes detectees",
       copy:
-        "Actualisez les dernieres donnees Bluetooth, recherchez par nom d'espece, filtrez par date et alternez entre la vue tableau et la vue carte.",
+        "Actualisez les derniers enregistrements depuis l'API, recherchez par nom d'espece, filtrez par date et alternez entre la vue tableau et la vue carte.",
       refreshingButton: "Actualisation des donnees...",
-      refreshButton: "Actualiser depuis l'appareil",
+      refreshButton: "Actualiser depuis l'appareil portable",
       refreshingCopy:
-        "Recuperation des detections les plus recentes depuis l'appareil Bluetooth.",
+        "Recuperation des detections les plus recentes depuis l'API.",
       refreshIdleCopy:
-        "Appuyez sur actualiser pour simuler la synchronisation des dernieres detections.",
+        "Appuyez sur actualiser pour synchroniser les dernieres detections.",
+      loadingBarLabel: "Progression du chargement",
+      refreshFailedTitle: "Impossible d'actualiser les donnees",
+      refreshFailedMessage:
+        "Nature Walk n'a pas pu charger les derniers enregistrements detectes depuis l'API.",
       tableView: "Vue tableau",
       mapView: "Vue carte",
       searchPlaceholder: "Rechercher des plantes detectees",
@@ -280,10 +224,6 @@ export const LOCALES = {
       pdfTitle: "Rapport des especes detectees Nature Walk",
       pdfCountLabel: "Enregistrements filtres exportes",
       pdfOpenDetails: "Ouvrir les details",
-      connectionRequiredTitle: "Connexion de l'appareil requise",
-      connectionRequiredMessage:
-        "Le Bluetooth est desactive ou votre appareil Nature Walk n'est pas connecte. Connectez votre appareil avant d'actualiser les plantes detectees.",
-      connectionRequiredAction: "Aller a Connecter l'appareil",
     },
     table: {
       id: "ID",
